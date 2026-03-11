@@ -1,3 +1,5 @@
 node_modules/
 .next/
 .env
+README_LOCAL.md
+OLD_README.md
