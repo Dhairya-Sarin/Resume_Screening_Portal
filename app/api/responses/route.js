@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { kv } from '@vercel/kv'
+import { list } from '@vercel/blob'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
@@ -10,11 +10,13 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const keys = await kv.keys('response:*')
+  const { blobs } = await list({ prefix: 'responses/' })
+
   const responses = []
-  for (const k of keys) {
-    const data = await kv.get(k)
-    if (data) responses.push(data)
+  for (const blob of blobs) {
+    const res = await fetch(blob.url)
+    const data = await res.json()
+    responses.push(data)
   }
 
   return NextResponse.json({ total_responses: responses.length, responses })

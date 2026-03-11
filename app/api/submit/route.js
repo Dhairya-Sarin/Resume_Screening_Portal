@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { kv } from '@vercel/kv'
+import { put } from '@vercel/blob'
 
 export async function POST(request) {
   try {
@@ -8,11 +8,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
     }
 
-    const key = `response:${Date.now()}_${data.evaluator.email.replace(/[^a-zA-Z0-9]/g, '_')}`
     data.server_timestamp = new Date().toISOString()
-    await kv.set(key, data)
 
-    return NextResponse.json({ success: true, key })
+    const filename = `responses/${Date.now()}_${data.evaluator.email.replace(/[^a-zA-Z0-9]/g, '_')}.json`
+    const blob = await put(filename, JSON.stringify(data, null, 2), {
+      contentType: 'application/json',
+      access: 'public',
+    })
+
+    return NextResponse.json({ success: true, url: blob.url })
   } catch (err) {
     console.error('Submit error:', err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
