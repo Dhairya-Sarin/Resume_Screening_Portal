@@ -1,0 +1,53 @@
+{
+  "evaluator": {
+    "name": "dkjnvjdfl",
+    "email": "vkjn",
+    "role": "klefnvlnef",
+    "years": "Less than 1 year",
+    "categories": []
+  },
+  "evaluations": [
+    {
+      "resume_id": "sample_1",
+      "category": "INFORMATION-TECHNOLOGY",
+      "overall_score": 8,
+      "experience_score": 8,
+      "education_score": 8,
+      "skills_score": 8,
+      "communication_score": 8,
+      "justification": "efnvljfevjfejvfe"
+    },
+    {
+      "resume_id": "sample_2",
+      "category": "FINANCE",
+      "overall_score": 8,
+      "experience_score": 8,
+      "education_score": 8,
+      "skills_score": 8,
+      "communication_score": 8,
+      "justification": "efnvljfevjfejvfe"
+    },
+    {
+      "resume_id": "sample_3",
+      "category": "SALES",
+      "overall_score": 8,
+      "experience_score": 8,
+      "education_score": 8,
+      "skills_score": 8,
+      "communication_score": 8,
+      "justification": "efnvljfevjfejvfe"
+    },
+    {
+      "resume_id": "sample_4",
+      "category": "HR",
+      "overall_score": 8,
+      "experience_score": 8,
+      "education_score": 8,
+      "skills_score": 8,
+      "communication_score": 8,
+      "justification": "efnvljfevjfejvfe"
+    }
+  ],
+  "submitted_at": "2026-03-11T17:38:45.919Z",
+  "server_timestamp": "2026-03-11T17:38:46.063Z"
+}
