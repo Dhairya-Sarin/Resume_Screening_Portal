@@ -2,6 +2,49 @@
 import { useState, useEffect, useRef } from 'react'
 import { RESUMES, JOB_DESCRIPTIONS } from '../lib/resumes'
 
+const RESUMES_PER_EVALUATOR = 20
+
+// ============================================================
+// SEEDED RANDOM — same email always gets same resumes
+// ============================================================
+function seededShuffle(arr, seed) {
+  const shuffled = [...arr]
+  let h = 0
+  for (let i = 0; i < seed.length; i++) {
+    h = ((h << 5) - h + seed.charCodeAt(i)) | 0
+  }
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    h = ((h << 5) - h + i) | 0
+    const j = Math.abs(h) % (i + 1)
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+function selectResumesForEvaluator(email) {
+  // Ensure balanced category coverage: 5 per category from 4 categories = 20
+  const categories = [...new Set(RESUMES.map(r => r.category))]
+  const perCat = Math.floor(RESUMES_PER_EVALUATOR / categories.length)
+
+  const selected = []
+  for (const cat of categories) {
+    const catResumes = RESUMES.filter(r => r.category === cat)
+    const shuffled = seededShuffle(catResumes, email + cat)
+    selected.push(...shuffled.slice(0, perCat))
+  }
+
+  // Fill remainder if categories don't divide evenly
+  const remaining = RESUMES_PER_EVALUATOR - selected.length
+  if (remaining > 0) {
+    const unused = RESUMES.filter(r => !selected.find(s => s.id === r.id))
+    const extra = seededShuffle(unused, email + 'extra')
+    selected.push(...extra.slice(0, remaining))
+  }
+
+  // Final shuffle so categories are mixed
+  return seededShuffle(selected, email + 'final')
+}
+
 // ============================================================
 // RATING SCALE COMPONENT
 // ============================================================
@@ -84,6 +127,7 @@ export default function Home() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [myResumes, setMyResumes] = useState([])
   const topRef = useRef(null)
 
   // Evaluator info
@@ -91,9 +135,24 @@ export default function Home() {
     name: '', email: '', role: '', years: '', categories: [],
   })
 
-  // All evaluations
-  const [evaluations, setEvaluations] = useState(
-    RESUMES.map(r => ({
+  // All evaluations — initialized when resumes are assigned
+  const [evaluations, setEvaluations] = useState([])
+
+  const current = evaluations[currentIdx]
+  const resume = myResumes[currentIdx]
+  const totalResumes = myResumes.length
+
+  useEffect(() => {
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [currentIdx, phase])
+
+  // Assign resumes when evaluator starts
+  const startEvaluation = () => {
+    const assigned = selectResumesForEvaluator(evaluator.email.toLowerCase().trim())
+    setMyResumes(assigned)
+    setEvaluations(assigned.map(r => ({
       resume_id: r.id,
       category: r.category,
       overall_score: null,
@@ -102,17 +161,9 @@ export default function Home() {
       skills_score: null,
       communication_score: null,
       justification: '',
-    }))
-  )
-
-  const current = evaluations[currentIdx]
-  const resume = RESUMES[currentIdx]
-
-  useEffect(() => {
-    if (topRef.current) {
-      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [currentIdx, phase])
+    })))
+    setPhase('evaluating')
+  }
 
   // Update current evaluation
   const updateField = (field, value) => {
@@ -123,9 +174,9 @@ export default function Home() {
 
   // Validate current evaluation
   const isCurrentValid = () => {
-    const e = evaluations[currentIdx]
-    return e.overall_score && e.experience_score && e.education_score &&
-           e.skills_score && e.communication_score && e.justification.trim().length > 10
+    if (!current) return false
+    return current.overall_score && current.experience_score && current.education_score &&
+           current.skills_score && current.communication_score && current.justification.trim().length > 10
   }
 
   // Validate evaluator info
@@ -136,7 +187,7 @@ export default function Home() {
 
   // Navigate
   const goNext = () => {
-    if (currentIdx < RESUMES.length - 1) {
+    if (currentIdx < totalResumes - 1) {
       setCurrentIdx(currentIdx + 1)
     } else {
       handleSubmit()
@@ -154,8 +205,10 @@ export default function Home() {
     try {
       const payload = {
         evaluator,
+        assigned_resume_ids: myResumes.map(r => r.id),
         evaluations,
         submitted_at: new Date().toISOString(),
+        version: '2.0',
       }
 
       const res = await fetch('/api/submit', {
@@ -176,7 +229,7 @@ export default function Home() {
   if (phase === 'intro') {
     return (
       <>
-        <ProgressBar current={0} total={RESUMES.length} phase="intro" />
+        <ProgressBar current={0} total={RESUMES_PER_EVALUATOR} phase="intro" />
         <div ref={topRef} style={{ maxWidth: 680, margin: '0 auto', padding: '80px 20px 60px' }}>
           {/* Header */}
           <div style={{
@@ -216,8 +269,9 @@ export default function Home() {
               background: '#f0f4ff', border: '1px solid #c5d3f0', borderRadius: 8,
               padding: '14px 18px', fontSize: 13, color: '#2c3e6b', marginBottom: 24,
             }}>
-              <strong>What you'll do:</strong> Evaluate {RESUMES.length} resumes against job descriptions
-              using a 1-10 scoring rubric. Takes about 20-30 minutes.
+              <strong>What you'll do:</strong> Evaluate <strong>{RESUMES_PER_EVALUATOR} resumes</strong> against
+              job descriptions using a 1-10 scoring rubric. Takes about <strong>15-20 minutes</strong>.
+              Each person receives a different random set of resumes to maximize coverage.
               You'll be acknowledged in the published paper.
             </div>
 
@@ -259,7 +313,7 @@ export default function Home() {
 
             {[
               { key: 'name', label: 'Full Name', placeholder: 'For paper acknowledgment', type: 'text' },
-              { key: 'email', label: 'Email', placeholder: 'your@email.com', type: 'email' },
+              { key: 'email', label: 'Email', placeholder: 'your@email.com — also determines which resumes you review', type: 'email' },
               { key: 'role', label: 'Current Role', placeholder: 'e.g., Senior Recruiter, HR Manager', type: 'text' },
             ].map(({ key, label, placeholder, type }) => (
               <div key={key} style={{ marginBottom: 18 }}>
@@ -311,7 +365,7 @@ export default function Home() {
           }}>
             <button
               disabled={!isEvaluatorValid()}
-              onClick={() => setPhase('evaluating')}
+              onClick={startEvaluation}
               style={{
                 padding: '14px 48px', fontSize: 15, fontWeight: 600,
                 fontFamily: 'DM Sans, sans-serif',
@@ -328,6 +382,10 @@ export default function Home() {
                 Fill in all fields above to continue
               </p>
             )}
+            <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 12 }}>
+              You'll be assigned {RESUMES_PER_EVALUATOR} resumes from a pool of {RESUMES.length}.
+              Each evaluator gets a unique set to maximize research coverage.
+            </p>
           </div>
         </div>
       </>
@@ -338,7 +396,7 @@ export default function Home() {
   if (phase === 'done') {
     return (
       <>
-        <ProgressBar current={RESUMES.length} total={RESUMES.length} phase="done" />
+        <ProgressBar current={totalResumes} total={totalResumes} phase="done" />
         <div ref={topRef} style={{
           maxWidth: 580, margin: '0 auto', padding: '120px 20px 60px', textAlign: 'center',
         }}>
@@ -356,8 +414,8 @@ export default function Home() {
               fontFamily: 'Source Serif 4, serif', fontSize: 24, fontWeight: 700, marginBottom: 12,
             }}>Thank You, {evaluator.name.split(' ')[0]}!</h2>
             <p style={{ color: 'var(--muted)', fontSize: 14, maxWidth: 400, margin: '0 auto', lineHeight: 1.7 }}>
-              Your {RESUMES.length} evaluations have been recorded. Your expert judgment
-              will be compared against AI model outputs to study fairness in automated hiring.
+              Your {totalResumes} evaluations have been recorded. Your expert judgment
+              will be compared against AI model outputs to study how AI assesses candidates.
               You'll be acknowledged in the published paper and will receive early access to findings.
             </p>
           </div>
@@ -367,14 +425,15 @@ export default function Home() {
   }
 
   // ===================== EVALUATION SCREEN =====================
+  if (!resume || !current) return null
+
   const jobDesc = JOB_DESCRIPTIONS[resume.category] || ''
 
   return (
     <>
-      <ProgressBar current={currentIdx} total={RESUMES.length} phase="evaluating" />
+      <ProgressBar current={currentIdx} total={totalResumes} phase="evaluating" />
       <div ref={topRef} style={{ maxWidth: 720, margin: '0 auto', padding: '60px 20px 100px' }}>
 
-        {/* Resume Card */}
         <div style={{
           background: 'var(--paper)', border: '1px solid var(--border)',
           borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--card-shadow)',
@@ -393,7 +452,7 @@ export default function Home() {
               {resume.category.replace(/-/g, ' ')}
             </span>
             <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>
-              {currentIdx + 1} / {RESUMES.length}
+              {currentIdx + 1} / {totalResumes}
             </span>
           </div>
 
@@ -522,7 +581,7 @@ export default function Home() {
               }}
             >
               {submitting ? 'Submitting...' :
-               currentIdx === RESUMES.length - 1 ? 'Submit All ✓' : 'Next Resume →'}
+               currentIdx === totalResumes - 1 ? 'Submit All ✓' : 'Next Resume →'}
             </button>
           </div>
         </div>
