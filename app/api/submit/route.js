@@ -13,7 +13,7 @@ export async function POST(request) {
     const filename = `responses/${Date.now()}_${data.evaluator.email.replace(/[^a-zA-Z0-9]/g, '_')}.json`
     const blob = await put(filename, JSON.stringify(data, null, 2), {
       contentType: 'application/json',
-      access: 'public',
+      access: 'private',
     })
 
     return NextResponse.json({ success: true, url: blob.url })
