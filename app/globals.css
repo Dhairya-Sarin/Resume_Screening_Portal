@@ -38,3 +38,37 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Resume HTML styling */
+[dangerouslysetinnerhtml] div,
+.resume-html {
+  font-family: 'DM Sans', sans-serif;
+}
+
+#document .section { margin-bottom: 16px; }
+#document .heading { margin-bottom: 8px; }
+#document .sectiontitle {
+  font-family: 'Source Serif 4', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+#document .name {
+  font-family: 'Source Serif 4', serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+#document .jobtitle { font-weight: 600; }
+#document .companyname { font-weight: 500; }
+#document .jobdates { color: var(--muted); font-size: 12px; }
+#document ul { padding-left: 20px; margin: 6px 0; }
+#document li { margin-bottom: 4px; font-size: 12.5px; }
+#document .twocol { width: 100%; }
+#document .twocol td { vertical-align: top; padding: 4px 8px; }
+#document p { margin: 4px 0; }

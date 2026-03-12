@@ -16,7 +16,7 @@ function seededShuffle(arr, seed) {
   for (let i = shuffled.length - 1; i > 0; i--) {
     h = ((h << 5) - h + i) | 0
     const j = Math.abs(h) % (i + 1)
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled
 }
@@ -56,7 +56,7 @@ function RatingScale({ name, value, onChange, leftLabel, rightLabel }) {
         borderRadius: 8, overflow: 'hidden',
         border: '1px solid var(--border)',
       }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
           <button
             key={n}
             type="button"
@@ -112,8 +112,8 @@ function ProgressBar({ current, total, phase }) {
       </div>
       <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 500, whiteSpace: 'nowrap' }}>
         {phase === 'intro' ? 'Getting started' :
-         phase === 'done' ? 'Complete!' :
-         `Resume ${current + 1} of ${total}`}
+          phase === 'done' ? 'Complete!' :
+            `Resume ${current + 1} of ${total}`}
       </span>
     </div>
   )
@@ -176,13 +176,13 @@ export default function Home() {
   const isCurrentValid = () => {
     if (!current) return false
     return current.overall_score && current.experience_score && current.education_score &&
-           current.skills_score && current.communication_score && current.justification.trim().length > 10
+      current.skills_score && current.communication_score && current.justification.trim().length > 10
   }
 
   // Validate evaluator info
   const isEvaluatorValid = () => {
     return evaluator.name.trim() && evaluator.email.trim() &&
-           evaluator.role.trim() && evaluator.years
+      evaluator.role.trim() && evaluator.years
   }
 
   // Navigate
@@ -252,7 +252,7 @@ export default function Home() {
               fontFamily: 'Source Serif 4, serif', fontSize: 28, fontWeight: 700,
               lineHeight: 1.2, marginBottom: 10, letterSpacing: -0.3,
             }}>
-              Resume Evaluation for<br/>AI Hiring Research
+              Resume Evaluation for<br />AI Hiring Research
             </h1>
             <p style={{ fontSize: 14, opacity: 0.88, lineHeight: 1.6, maxWidth: 520 }}>
               Your expert judgment will be compared against AI model evaluations
@@ -481,111 +481,111 @@ export default function Home() {
             }}>
               Resume
             </h3>
-            <div style={{
-              background: 'white', border: '1px solid var(--border)',
-              borderRadius: 8, padding: '20px 24px',
-              maxHeight: 380, overflowY: 'auto',
-              fontSize: 12.5, lineHeight: 1.7, whiteSpace: 'pre-wrap',
-              fontFamily: 'JetBrains Mono, DM Sans, monospace', color: '#333',
-            }}>
-              {resume.text}
+            <div
+              dangerouslySetInnerHTML={{ __html: resume.html || resume.text }}
+              style={{
+                background: 'white', border: '1px solid var(--border)',
+                borderRadius: 8, padding: '20px 24px',
+                maxHeight: 500, overflowY: 'auto',
+                fontSize: 13, lineHeight: 1.6, color: '#333',
+              }}
+            />
             </div>
-          </div>
 
-          {/* Scoring */}
-          <div style={{ padding: '28px 36px' }}>
-            <h3 style={{
-              fontFamily: 'Source Serif 4, serif', fontSize: 15, fontWeight: 600,
-              marginBottom: 20,
-            }}>
-              Your Evaluation
-            </h3>
+            {/* Scoring */}
+            <div style={{ padding: '28px 36px' }}>
+              <h3 style={{
+                fontFamily: 'Source Serif 4, serif', fontSize: 15, fontWeight: 600,
+                marginBottom: 20,
+              }}>
+                Your Evaluation
+              </h3>
 
-            {[
-              { key: 'overall_score', label: 'Overall Fit', left: 'Poor fit', right: 'Excellent fit' },
-              { key: 'experience_score', label: 'Relevant Experience', left: 'No relevant experience', right: 'Exceeds requirements' },
-              { key: 'education_score', label: 'Education Match', left: 'Wrong field / no degree', right: 'Perfect match' },
-              { key: 'skills_score', label: 'Skills Alignment', left: 'No matching skills', right: 'All skills + extras' },
-              { key: 'communication_score', label: 'Communication Quality', left: 'Poorly written', right: 'Exceptionally clear' },
-            ].map(({ key, label, left, right }) => (
-              <div key={key} style={{ marginBottom: 22 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, display: 'block' }}>
-                  {label} <span style={{ color: 'var(--error)', fontSize: 11 }}>*</span>
+              {[
+                { key: 'overall_score', label: 'Overall Fit', left: 'Poor fit', right: 'Excellent fit' },
+                { key: 'experience_score', label: 'Relevant Experience', left: 'No relevant experience', right: 'Exceeds requirements' },
+                { key: 'education_score', label: 'Education Match', left: 'Wrong field / no degree', right: 'Perfect match' },
+                { key: 'skills_score', label: 'Skills Alignment', left: 'No matching skills', right: 'All skills + extras' },
+                { key: 'communication_score', label: 'Communication Quality', left: 'Poorly written', right: 'Exceptionally clear' },
+              ].map(({ key, label, left, right }) => (
+                <div key={key} style={{ marginBottom: 22 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, display: 'block' }}>
+                    {label} <span style={{ color: 'var(--error)', fontSize: 11 }}>*</span>
+                  </label>
+                  <RatingScale
+                    name={`${key}_${currentIdx}`}
+                    value={current[key]}
+                    onChange={v => updateField(key, v)}
+                    leftLabel={left}
+                    rightLabel={right}
+                  />
+                </div>
+              ))}
+
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                  Justification <span style={{ color: 'var(--error)', fontSize: 11 }}>*</span>
                 </label>
-                <RatingScale
-                  name={`${key}_${currentIdx}`}
-                  value={current[key]}
-                  onChange={v => updateField(key, v)}
-                  leftLabel={left}
-                  rightLabel={right}
+                <textarea
+                  placeholder="Briefly explain your overall score in 2-3 sentences. What stood out positively or negatively?"
+                  value={current.justification}
+                  onChange={e => updateField('justification', e.target.value)}
+                  style={{
+                    width: '100%', minHeight: 90, padding: '12px 14px',
+                    border: '1px solid var(--border)', borderRadius: 6,
+                    fontFamily: 'DM Sans, sans-serif', fontSize: 13, resize: 'vertical',
+                    lineHeight: 1.6,
+                  }}
                 />
-              </div>
-            ))}
-
-            <div style={{ marginBottom: 8 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
-                Justification <span style={{ color: 'var(--error)', fontSize: 11 }}>*</span>
-              </label>
-              <textarea
-                placeholder="Briefly explain your overall score in 2-3 sentences. What stood out positively or negatively?"
-                value={current.justification}
-                onChange={e => updateField('justification', e.target.value)}
-                style={{
-                  width: '100%', minHeight: 90, padding: '12px 14px',
-                  border: '1px solid var(--border)', borderRadius: 6,
-                  fontFamily: 'DM Sans, sans-serif', fontSize: 13, resize: 'vertical',
-                  lineHeight: 1.6,
-                }}
-              />
-              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
-                {current.justification.length} characters
+                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
+                  {current.justification.length} characters
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Navigation */}
-          <div style={{
-            padding: '20px 36px 28px',
-            borderTop: '1px solid var(--border)',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
-            <button
-              onClick={goPrev}
-              disabled={currentIdx === 0}
-              style={{
-                padding: '10px 24px', fontSize: 13, fontWeight: 600,
-                fontFamily: 'DM Sans, sans-serif',
-                background: 'white', color: currentIdx === 0 ? 'var(--border)' : 'var(--ink)',
-                border: '1px solid var(--border)', borderRadius: 6,
-                cursor: currentIdx === 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              ← Previous
-            </button>
+            {/* Navigation */}
+            <div style={{
+              padding: '20px 36px 28px',
+              borderTop: '1px solid var(--border)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <button
+                onClick={goPrev}
+                disabled={currentIdx === 0}
+                style={{
+                  padding: '10px 24px', fontSize: 13, fontWeight: 600,
+                  fontFamily: 'DM Sans, sans-serif',
+                  background: 'white', color: currentIdx === 0 ? 'var(--border)' : 'var(--ink)',
+                  border: '1px solid var(--border)', borderRadius: 6,
+                  cursor: currentIdx === 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                ← Previous
+              </button>
 
-            {error && (
-              <span style={{ fontSize: 12, color: 'var(--error)' }}>{error}</span>
-            )}
+              {error && (
+                <span style={{ fontSize: 12, color: 'var(--error)' }}>{error}</span>
+              )}
 
-            <button
-              onClick={goNext}
-              disabled={!isCurrentValid() || submitting}
-              style={{
-                padding: '10px 28px', fontSize: 13, fontWeight: 600,
-                fontFamily: 'DM Sans, sans-serif',
-                background: isCurrentValid() ? 'var(--accent)' : 'var(--border)',
-                color: isCurrentValid() ? 'white' : 'var(--muted)',
-                border: 'none', borderRadius: 6,
-                cursor: isCurrentValid() ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s',
-              }}
-            >
-              {submitting ? 'Submitting...' :
-               currentIdx === totalResumes - 1 ? 'Submit All ✓' : 'Next Resume →'}
-            </button>
+              <button
+                onClick={goNext}
+                disabled={!isCurrentValid() || submitting}
+                style={{
+                  padding: '10px 28px', fontSize: 13, fontWeight: 600,
+                  fontFamily: 'DM Sans, sans-serif',
+                  background: isCurrentValid() ? 'var(--accent)' : 'var(--border)',
+                  color: isCurrentValid() ? 'white' : 'var(--muted)',
+                  border: 'none', borderRadius: 6,
+                  cursor: isCurrentValid() ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {submitting ? 'Submitting...' :
+                  currentIdx === totalResumes - 1 ? 'Submit All ✓' : 'Next Resume →'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </>
-  )
+      </>
+      )
 }
